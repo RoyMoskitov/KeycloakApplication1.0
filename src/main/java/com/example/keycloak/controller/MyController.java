@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 
 @Controller
@@ -37,6 +38,7 @@ public class MyController {
     }
 
     @PostMapping("/create")
+    @ResponseBody
     public String createUser(@RequestBody UserRequestDTO userRequestDTO) {
         keycloakService.addUser(userRequestDTO);
         return "index";

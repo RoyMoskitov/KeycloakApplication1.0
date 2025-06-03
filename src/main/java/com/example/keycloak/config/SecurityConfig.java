@@ -74,7 +74,7 @@ public class SecurityConfig {
     @Bean
     OidcClientInitiatedLogoutSuccessHandler oidcLogoutSuccessHandler(ClientRegistrationRepository clientRegistrationRepository) {
         OidcClientInitiatedLogoutSuccessHandler successHandler = new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
-        successHandler.setPostLogoutRedirectUri(URI.create("http://localhost:8080").toString());
+        successHandler.setPostLogoutRedirectUri(URI.create("http://localhost:8181").toString());
         return successHandler;
     }
 

@@ -1,7 +1,9 @@
-version: '3'
+version: '3.8'
+
 services:
   postgres:
     image: postgres
+    restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
@@ -10,27 +12,50 @@ services:
       POSTGRES_PASSWORD: keycloakpass
     networks:
       - keycloak-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloakuser -d keycloakdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   keycloak:
-    image: jboss/keycloak:16.1.1
+    image: quay.io/keycloak/keycloak:24.0.3
+    restart: always
     ports:
       - 8180:8080
+      - 8182:8443
     environment:
-      DB_VENDOR: POSTGRES
-      DB_ADDR: postgres
-      DB_DATABASE: keycloakdb
-      DB_SCHEMA: public
-      DB_USER: keycloakuser
-      DB_PASSWORD: keycloakpass
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: adminpass
-      KEYCLOAK_IMPORT: /opt/jboss/keycloak/standalone/configuration/realm-export.json
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: keycloakdb
+      KC_DB_USERNAME: keycloakuser
+      KC_DB_PASSWORD: keycloakpass
+      KC_DB_SCHEMA: public
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: adminpass
+      QUARKUS_TRANSACTION_MANAGER_ENABLE_RECOVERY: "true"
+    command:
+      - start-dev
+      - --import-realm
+      - --https-port=8443
+      - --https-key-store-file=/opt/keycloak/conf/keycloak.local.p12
+      - --https-key-store-password=1234
+      - --https-key-store-type=pkcs12
+      - --hostname-strict=false
+      - --hostname-strict-https=false
+      - --hostname=keycloak.local
+
     volumes:
-      - ./realm-export.json:/opt/jboss/keycloak/standalone/configuration/realm-export.json
+      - ./keycloak.local.p12:/opt/keycloak/conf/keycloak.local.p12:ro
+      - ./keycloak.jks:/opt/keycloak/conf/keycloak.jks
+      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./blacklist.txt:/opt/keycloak/data/password-blacklists/blacklist.txt
     networks:
       - keycloak-network
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
 networks:
   keycloak-network:
@@ -38,5 +63,3 @@ networks:
 
 volumes:
   postgres_data:
-    driver: local
-

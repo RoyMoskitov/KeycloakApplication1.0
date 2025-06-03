@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8181
 
 spring:
   security:
@@ -13,10 +13,12 @@ spring:
             authorization-grant-type: authorization_code
         provider:
           keycloak:
-            issuer-uri: http://localhost:8180/auth/realms/myrealm
+            issuer-uri: http://localhost:8180/realms/myrealm
             user-name-attribute: preferred_username
 keycloak:
-  server-url: http://localhost:8180/auth
+  server-url: http://localhost:8180
   realm: myrealm
   username: admin
   password: adminpass
+
+
